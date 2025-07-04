@@ -251,8 +251,8 @@
             
             At this time, the change handler can't opt to reject changes.
             
-            If bagName refers to an entity, use [GET_ENTITY_FROM_STATE_BAG_NAME](?\_0x4BDF1868) to get the entity handle
-            If bagName refers to a player, use [GET_PLAYER_FROM_STATE_BAG_NAME](?\_0xA56135E0) to get the player handle
+            If bagName refers to an entity, use [GET_ENTITY_FROM_STATE_BAG_NAME](#\_0x4BDF1867) to get the entity handle
+            If bagName refers to a player, use [GET_PLAYER_FROM_STATE_BAG_NAME](#\_0xA56135E0) to get the player handle
             </summary>
             <param name="keyFilter">
             The key to check for, or null for no filter.
@@ -269,63 +269,57 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.ApplyForceToEntity(System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
-            Applies a force to the specified entity.
-            
-            ```cpp
-            enum eForceType
-            {
-                MinForce = 0,
-                MaxForceRot = 1,
-                MinForce2 = 2,
-                MaxForceRot2 = 3,
-                ForceNoRot = 4,
-                ForceRotPlusForce = 5
+            cpp
+            enum eApplyForceTypes {
+                APPLY_TYPE_FORCE = 0,
+                APPLY_TYPE_IMPULSE = 1,
+                APPLY_TYPE_EXTERNAL_FORCE = 2,
+                APPLY_TYPE_EXTERNAL_IMPULSE = 3,
+                APPLY_TYPE_TORQUE = 4,
+                APPLY_TYPE_ANGULAR_IMPULSE = 5
             }
-            ```
-            
-            Research/documentation on the gtaforums can be found [here](https://gtaforums.com/topic/885669-precisely-define-object-physics/) and [here](https://gtaforums.com/topic/887362-apply-forces-and-momentums-to-entityobject/).
             </summary>
             <param name="entity">
-            The entity you want to apply a force on
+            The entity handle
             </param>
             <param name="forceType">
-            Refer to `eForceType`
+            The force type
             </param>
             <param name="x">
-            Force amount (X)
+            The x component of the force to apply
             </param>
             <param name="y">
-            Force amount (Y)
+            The y component of the force to apply
             </param>
             <param name="z">
-            Force amount (Z)
+            The z component of the force to apply
             </param>
             <param name="offX">
-            Rotation/offset force (X)
+            Offset from center of entity (X)
             </param>
             <param name="offY">
-            Rotation/offset force (Y)
+            Offset from center of entity (Y)
             </param>
             <param name="offZ">
-            Rotation/offset force (Z)
+            Offset from center of entity (Z)
             </param>
-            <param name="boneIndex">
-            (Often 0) Entity bone index
+            <param name="nComponent">
+            Component of the entity to apply the force too. Only matters for breakable or articulated (ragdoll) physics. 0 means the root or parent component
             </param>
-            <param name="isDirectionRel">
-            (Usually false) Vector defined in local (body-fixed) coordinate frame
+            <param name="bLocalForce">
+            Specifies whether the force vector passed in is in local or world coordinates. `true` means the force will get automatically transformed into world space before being applied
             </param>
-            <param name="ignoreUpVec">
-            (Usually true)
+            <param name="bLocalOffset">
+            Specifies whether the offset passed in is in local or world coordinates
             </param>
-            <param name="isForceRel">
-            (Usually true) When true, force gets multiplied with the objects mass and different objects will have the same acceleration
+            <param name="bScaleByMass">
+            Specifies whether to scale the force by mass
             </param>
-            <param name="p12">
-            (Usually false)
+            <param name="bPlayAudio">
+            Specifies whether to play audio events related to the force being applied. The audio will depend on the entity type. Currently vehicles are the only entity types supported, and will play a suspension squeal depending on the magnitude of the force
             </param>
-            <param name="p13">
-            (Usually true)
+            <param name="bScaleByTimeWarp">
+            Specifies whether to scale the force by time warp. Default is `true`
             </param>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.CanPlayerStartCommerceSession(CitizenFX.Core.CString)">
@@ -638,6 +632,17 @@
             A boolean.
             </returns>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.DoesTrainStopAtStations(System.Int32)">
+            <summary>
+            DOES_TRAIN_STOP_AT_STATIONS
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            True if the train stops at stations. False otherwise
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.DropPlayer(CitizenFX.Core.CString,CitizenFX.Core.CString)">
             <summary>
             DROP_PLAYER
@@ -671,7 +676,7 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.ExecuteCommand(CitizenFX.Core.CString)">
             <summary>
-            EXECUTE_COMMAND
+            Depending on your use case you may need to use `add_acl resource.&lt;your_resource_name&gt; command.&lt;command_name&gt; allow` to use this native in your resource.
             </summary>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.FindKvp(System.Int32)">
@@ -695,6 +700,11 @@
             Nonsynchronous operations will not wait for a disk/filesystem flush before returning from a write or delete call. They will be much faster than their synchronous counterparts (e.g., bulk operations), however, a system crash may lose the data to some recent operations.
             
             This native ensures all `_NO_SYNC` operations are synchronized with the disk/filesystem.
+            </summary>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.FormatStackTrace(System.Object)">
+            <summary>
+            An internal function for converting a stack trace object to a string.
             </summary>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.FreezeEntityPosition(System.Int32,System.Boolean)">
@@ -838,6 +848,62 @@
             The name of the resource.
             </returns>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetEntitiesInRadius(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Object)">
+            <summary>
+            ### Supported types
+            
+            *   \[1] : Peds (including animals) and players.
+            *   \[2] : Vehicles.
+            *   \[3] : Objects (props), doors, and projectiles.
+            
+            ### Coordinates need to be send unpacked (x,y,z)
+            
+            ```lua
+            
+            -- Define the allowed model hashes
+            local allowedModelHashes = { GetHashKey("p_crate03x"), GetHashKey("p_crate22x") }
+            
+            -- Get the player's current coordinates
+            local playerCoords = GetEntityCoords(PlayerPedId())
+            
+            -- Retrieve all entities of type Object (type 3) within a radius of 10.0 units
+            -- that match the allowed model hashes
+            -- and sort output entities by distance
+            local entities = GetEntitiesInRadius(playerCoords.x, playerCoords.y, playerCoords.z, 10.0, 3, true, allowedModelHashes)
+            
+            -- Iterate through the list of entities and print their ids
+            for i = 1, #entities do
+                local entity = entities[i]
+                print(entity)
+            end
+            
+            ```
+            </summary>
+            <param name="x">
+            The X coordinate.
+            </param>
+            <param name="y">
+            The Y coordinate.
+            </param>
+            <param name="z">
+            The Z coordinate.
+            </param>
+            <param name="radius">
+            Max distance from coordinate to entity
+            </param>
+            <param name="entityType">
+            Entity types see list below
+            </param>
+            <param name="sortByDistance">
+            Sort output entites by distance from nearest to farthest
+            </param>
+            <param name="models">
+            List of allowed models its also optional
+            </param>
+            <returns>
+            An array containing entity handles for each entity.
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetEntityAttachedTo(System.Int32)">
             <summary>
             Gets the entity that this entity is attached to.
@@ -875,7 +941,7 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetEntityFromStateBagName(CitizenFX.Core.CString)">
             <summary>
-            Returns the entity handle for the specified state bag name. For use with [ADD_STATE_BAG_CHANGE_HANDLER](?\_0x5BA35AAF).
+            Returns the entity handle for the specified state bag name. For use with [ADD_STATE_BAG_CHANGE_HANDLER](#\_0x5BA35AAF).
             </summary>
             <param name="bagName">
             An internal state bag ID from the argument to a state bag change handler.
@@ -1067,6 +1133,7 @@
                 *   3258
                 *   3323
                 *   3407
+                *   3570
             *   RedM
                 *   1311
                 *   1355
@@ -1198,7 +1265,7 @@
             The target vehicle.
             </param>
             <returns>
-            See the client-side [GET_HELI_MAIN_ROTOR_HEALTH](https://docs.fivem.net/natives/?\_0xE4CB7541F413D2C5) for the return value.
+            See the client-side [GET_HELI_MAIN_ROTOR_HEALTH](#\_0xE4CB7541F413D2C5) for the return value.
             </returns>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetHeliPitchControl(System.Int32)">
@@ -1355,6 +1422,77 @@
             The last ped in the specified seat of the passed vehicle. Returns 0 if the specified seat was never occupied or the last ped does not exist anymore.
             </returns>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetNetTypeFromEntity(System.Int32)">
+            <summary>
+            Gets the specific entity type (as an integer), which can be one of the following defined down below:
+            
+            #### FiveM:
+            
+            ```cpp
+            enum eNetObjEntityType
+            {
+                Automobile = 0,
+                Bike = 1,
+                Boat = 2,
+                Door = 3,
+                Heli = 4,
+                Object = 5,
+                Ped = 6,
+                Pickup = 7,
+                PickupPlacement = 8,
+                Plane = 9,
+                Submarine = 10,
+                Player = 11,
+                Trailer = 12,
+                Train = 13
+            };
+            ```
+            
+            #### RedM:
+            
+            ```cpp
+            enum eNetObjEntityType
+            {
+                Animal = 0,
+                Automobile = 1,
+                Bike = 2,
+                Boat = 3,
+                Door = 4,
+                Heli = 5,
+                Object = 6,
+                Ped = 7,
+                Pickup = 8,
+                PickupPlacement = 9,
+                Plane = 10,
+                Submarine = 11,
+                Player = 12,
+                Trailer = 13,
+                Train = 14,
+                DraftVeh = 15,
+                StatsTracker = 16,
+                PropSet = 17,
+                AnimScene = 18,
+                GroupScenario = 19,
+                Herd = 20,
+                Horse = 21,
+                WorldState = 22,
+                WorldProjectile = 23,
+                Incident = 24,
+                Guardzone = 25,
+                PedGroup = 26,
+                CombatDirector = 27,
+                PedSharedTargeting = 28,
+                Persistent = 29
+            };
+            ```
+            </summary>
+            <param name="entity">
+            The entity to get the specific type of.
+            </param>
+            <returns>
+            The specific entity type returned as an integer value or -1 if the entity is invalid.
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetNumPlayerIdentifiers(CitizenFX.Core.CString)">
             <summary>
             GET_NUM_PLAYER_IDENTIFIERS
@@ -1373,7 +1511,7 @@
         <member name="M:CitizenFX.Server.Native.Natives.GetNumResourceMetadata(CitizenFX.Core.CString,CitizenFX.Core.CString)">
             <summary>
             Gets the amount of metadata values with the specified key existing in the specified resource's manifest.
-            See also: [Resource manifest](https://docs.fivem.net/resources/manifest/)
+            See also: [Resource manifest](https://docs.fivem.net/docs/scripting-reference/resource-manifest/resource-manifest/)
             </summary>
             <param name="resourceName">
             The resource name.
@@ -1576,9 +1714,9 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetPlayerIdentifier(CitizenFX.Core.CString,System.Int32)">
             <summary>
-            To get the number of identifiers, use [GET_NUM_PLAYER_IDENTIFIERS](?\_0xFF7F66AB)
+            To get the number of identifiers, use [GET_NUM_PLAYER_IDENTIFIERS](#\_0xFF7F66AB)
             
-            To get a specific type of identifier, use [GET_PLAYER_IDENTIFIER_BY_TYPE](?\_0xA61C8FC6)
+            To get a specific type of identifier, use [GET_PLAYER_IDENTIFIER_BY_TYPE](#\_0xA61C8FC6)
             </summary>
             <returns>
             Returns the identifier at the specific index, if out of bounds returns `null`
@@ -1658,10 +1796,55 @@
             Returns a valid Ped Entity ID if the passed `playerSrc` is valid, `0` if not.
             </returns>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetPlayerPeerStatistics(CitizenFX.Core.CString,System.Int32)">
+            <summary>
+            ```cpp
+            const int ENET_PACKET_LOSS_SCALE = 65536;
+            
+            enum PeerStatistics
+            {
+            	// PacketLoss will only update once every 10 seconds, use PacketLossEpoch if you want the time
+            	// since the last time the packet loss was updated.
+            
+            	// the amount of packet loss the player has, needs to be scaled with PACKET_LOSS_SCALE
+            	PacketLoss = 0,
+            	// The variance in the packet loss
+            	PacketLossVariance = 1,
+            	// The time since the last packet update in ms, relative to the peers connection time
+            	PacketLossEpoch = 2,
+            	// The mean amount of time it takes for a packet to get to the client (ping)
+            	RoundTripTime = 3,
+            	// The variance in the round trip time
+            	RoundTripTimeVariance = 4,
+            	// Despite their name, these are only updated once every 5 seconds, you can get the last time this was updated with PacketThrottleEpoch
+            	// The last recorded round trip time of a packet
+            	LastRoundTripTime = 5,
+            	// The last round trip time variance
+            	LastRoundTripTimeVariance = 6,
+            	// The time since the last packet throttle update, relative to the peers connection time
+            	PacketThrottleEpoch = 7,
+            };
+            ```
+            
+            These statistics only update once every 10 seconds.
+            </summary>
+            <param name="playerSrc">
+            The player to get the stats of
+            </param>
+            <param name="peerStatistic">
+            The statistic to get, this will error if its out of range
+            </param>
+            <returns>
+            See `ENetStatisticType` for what this will return.
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetPlayerPing(CitizenFX.Core.CString)">
             <summary>
-            GET_PLAYER_PING
+            See [GET_PLAYER_PEER_STATISTICS](#\_0x9A928294) if you want more detailed information, like packet loss, and packet/rtt variance
             </summary>
+            <returns>
+            Returns the mean amount of time a packet takes to get to the client
+            </returns>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetPlayerRoutingBucket(CitizenFX.Core.CString)">
             <summary>
@@ -1877,7 +2060,7 @@
         <member name="M:CitizenFX.Server.Native.Natives.GetResourceMetadata(CitizenFX.Core.CString,CitizenFX.Core.CString,System.Int32)">
             <summary>
             Gets the metadata value at a specified key/index from a resource's manifest.
-            See also: [Resource manifest](https://docs.fivem.net/resources/manifest/)
+            See also: [Resource manifest](https://docs.fivem.net/docs/scripting-reference/resource-manifest/resource-manifest/)
             </summary>
             <param name="resourceName">
             The resource name.
@@ -1965,6 +2148,17 @@
             Returns a value representing the main throttle of the jetpack. The values range from `0.0` (no throttle) to `1.0` (full throttle)
             </returns>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainBackwardCarriage(System.Int32)">
+            <summary>
+            GET_TRAIN_BACKWARD_CARRIAGE
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            The handle of the carriage behind this train in the chain. Otherwise returns 0 if the train is the caboose of the chain.
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetTrainCarriageEngine(System.Int32)">
             <summary>
             GET_TRAIN_CARRIAGE_ENGINE
@@ -1985,6 +2179,71 @@
             </param>
             <returns>
             The carriage index. -1 returned if invalid result.
+            </returns>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainCruiseSpeed(System.Int32)">
+            <summary>
+            Gets the trains desired speed.
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            The desired cruise speed of the train. Not the speed the train is currently traveling at
+            </returns>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainDirection(System.Int32)">
+            <summary>
+            Gets the direction the train is facing
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            True if the train is moving forward on the track, False otherwise
+            </returns>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainForwardCarriage(System.Int32)">
+            <summary>
+            GET_TRAIN_FORWARD_CARRIAGE
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            The handle of the carriage in front of this train in the chain. Otherwise returns 0 if the train has no carriage in front of it
+            </returns>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainState(System.Int32)">
+            <summary>
+            GET_TRAIN_STATE
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            The trains current state```cpp
+            enum eTrainState
+            {
+                MOVING = 0,
+                ENTERING_STATION,
+                OPENING_DOORS,
+                STOPPED,
+                CLOSING_DOORS,
+                LEAVING_STATION,
+            }
+            ```
+            </returns>
+        </member>
+        <member name="M:CitizenFX.Server.Native.Natives.GetTrainTrackIndex(System.Int32)">
+            <summary>
+            GET_TRAIN_TRACK_INDEX
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            The track index the train is currently on.
             </returns>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetVehicleBodyHealth(System.Int32)">
@@ -2105,7 +2364,7 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.GetVehicleHornType(System.Int32)">
             <summary>
-            This is a getter for the client-side native [`START_VEHICLE_HORN`](https://docs.fivem.net/natives/?\_0x9C8C6504B5B63D2C), which allows you to return the horn type of the vehicle.
+            This is a getter for the client-side native [`START_VEHICLE_HORN`](#\_0x9C8C6504B5B63D2C), which allows you to return the horn type of the vehicle.
             
             **Note**: This native only gets the hash value set with `START_VEHICLE_HORN`. If a wrong hash is passed into `START_VEHICLE_HORN`, it will return this wrong hash.
             
@@ -2525,6 +2784,17 @@
             IS_PRINCIPAL_ACE_ALLOWED
             </summary>
         </member>
+        <member name="M:CitizenFX.Server.Native.Natives.IsTrainCaboose(System.Int32)">
+            <summary>
+            IS_TRAIN_CABOOSE
+            </summary>
+            <param name="train">
+            The train handle
+            </param>
+            <returns>
+            Returns true if the train is the caboose of the chain.
+            </returns>
+        </member>
         <member name="M:CitizenFX.Server.Native.Natives.IsVehicleEngineStarting(System.Int32)">
             <summary>
             IS_VEHICLE_ENGINE_STARTING
@@ -2547,7 +2817,7 @@
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.IsVehicleWindowIntact(System.Int32,System.Int32)">
             <summary>
-            See the client-side [IS_VEHICLE_WINDOW_INTACT](https://docs.fivem.net/natives/?\_0x46E571A0E20D01F1) for a window indexes list.
+            See the client-side [IS_VEHICLE_WINDOW_INTACT](#\_0x46E571A0E20D01F1) for a window indexes list.
             </summary>
             <param name="vehicle">
             The target vehicle.
@@ -3009,9 +3279,11 @@
             }
             ```
             
-            Sets what happens when the entity is orphaned and no longer has its original owner.
+            Sets what the server will do when the entity no longer has its original owner. By default the server will cleanup entities that it considers "no longer relevant".
             
-            **NOTE**: This native doesn't guarantee the persistence of the entity.
+            When used on trains, this native will recursively call onto all attached carriages.
+            
+            **NOTE**: When used with `KeepEntity` (2) this native only guarantees that the ***server*** will not delete the entity, client requests to delete the entity will still work perfectly fine.
             </summary>
             <param name="entity">
             The entity to set the orphan mode of
@@ -3810,7 +4082,7 @@
             
             This native function is often called prior to calling natives such as:
             
-            *   [`SetPedHairColor`](#\_0xBB43F090)
+            *   [`SetPedHairColor`](#\_0xA23FE32C)
             *   [`SetPedHeadOverlayColor`](#\_0x78935A27)
             *   [`SetPedHeadOverlay`](#\_0xD28DBA90)
             *   [`SetPedFaceFeature`](#\_0x6C8D4458)
@@ -4000,12 +4272,34 @@
             **1**: CTaskNMScriptControl: Hardcoded not to work in networked environments.
             **Else**: CTaskNMBalance
             </summary>
-            <param name="time1">
+            <param name="ped">
+            The ped to ragdoll.
+            </param>
+            <param name="minTime">
             Time(ms) Ped is in ragdoll mode; only applies to ragdoll types 0 and not 1.
+            </param>
+            <param name="bAbortIfInjured">
+            unused
+            </param>
+            <param name="bAbortIfDead">
+            unused
             </param>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.SetPedToRagdollWithFall(System.Int32,System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
+            cpp
+            enum eNMFallType {
+                TYPE_FROM_HIGH = 0,
+                TYPE_OVER_WALL = 1,
+                TYPE_DOWN_STAIRS = 2,
+                TYPE_DIE_TYPES = 3,
+                TYPE_DIE_FROM_HIGH = 4,
+                TYPE_DIE_OVER_WALL = 5,
+                TYPE_DIE_DOWN_STAIRS = 6
+            }
+            ```
+            
+            ```
             Return variable is never used in R*'s scripts.  
             Not sure what p2 does. It seems like it would be a time judging by it's usage in R*'s scripts, but didn't seem to affect anything in my testings.  
             x, y, and z are coordinates, most likely to where the ped will fall.  
@@ -4014,6 +4308,42 @@
             (Simplified) Example of the usage of the function from R*'s scripts:  
             ped::set_ped_to_ragdoll_with_fall(ped, 1500, 2000, 1, -entity::get_entity_forward_vector(ped), 1f, 0f, 0f, 0f, 0f, 0f, 0f);
             </summary>
+            <param name="ped">
+            The ped to ragdoll.
+            </param>
+            <param name="nFallType">
+            The type of fall.
+            </param>
+            <param name="dirX">
+            The x direction of the fall.
+            </param>
+            <param name="dirY">
+            The y direction of the fall.
+            </param>
+            <param name="dirZ">
+            The z direction of the fall.
+            </param>
+            <param name="fGroundHeight">
+            The ground height (z).
+            </param>
+            <param name="grab1X">
+            unused
+            </param>
+            <param name="grab1Y">
+            unused
+            </param>
+            <param name="grab1Z">
+            unused
+            </param>
+            <param name="grab2X">
+            unused
+            </param>
+            <param name="grab2Y">
+            unused
+            </param>
+            <param name="grab2Z">
+            unused
+            </param>
         </member>
         <member name="M:CitizenFX.Server.Native.Natives.SetPlayerControl(CitizenFX.Core.CString,System.Boolean,System.Int32)">
             <summary>
@@ -4820,27 +5150,21 @@
             
             At this time, the change handler can't opt to reject changes.
             
-            If bagName refers to an entity, use [GET_ENTITY_FROM_STATE_BAG_NAME](?\_0x4BDF1868) to get the entity handle
-            If bagName refers to a player, use [GET_PLAYER_FROM_STATE_BAG_NAME](?\_0xA56135E0) to get the player handle
+            If bagName refers to an entity, use [GET_ENTITY_FROM_STATE_BAG_NAME](#\_0x4BDF1867) to get the entity handle
+            If bagName refers to a player, use [GET_PLAYER_FROM_STATE_BAG_NAME](#\_0xA56135E0) to get the player handle
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.APPLY_FORCE_TO_ENTITY">
             <summary>
-            Applies a force to the specified entity.
-            
-            ```cpp
-            enum eForceType
-            {
-                MinForce = 0,
-                MaxForceRot = 1,
-                MinForce2 = 2,
-                MaxForceRot2 = 3,
-                ForceNoRot = 4,
-                ForceRotPlusForce = 5
+            cpp
+            enum eApplyForceTypes {
+                APPLY_TYPE_FORCE = 0,
+                APPLY_TYPE_IMPULSE = 1,
+                APPLY_TYPE_EXTERNAL_FORCE = 2,
+                APPLY_TYPE_EXTERNAL_IMPULSE = 3,
+                APPLY_TYPE_TORQUE = 4,
+                APPLY_TYPE_ANGULAR_IMPULSE = 5
             }
-            ```
-            
-            Research/documentation on the gtaforums can be found [here](https://gtaforums.com/topic/885669-precisely-define-object-physics/) and [here](https://gtaforums.com/topic/887362-apply-forces-and-momentums-to-entityobject/).
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.CAN_PLAYER_START_COMMERCE_SESSION">
@@ -4973,6 +5297,11 @@
             Requests whether or not the player owns the specified package.
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.DOES_TRAIN_STOP_AT_STATIONS">
+            <summary>
+            DOES_TRAIN_STOP_AT_STATIONS
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.DROP_PLAYER">
             <summary>
             DROP_PLAYER
@@ -5000,7 +5329,7 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.EXECUTE_COMMAND">
             <summary>
-            EXECUTE_COMMAND
+            Depending on your use case you may need to use `add_acl resource.&lt;your_resource_name&gt; command.&lt;command_name&gt; allow` to use this native in your resource.
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.FIND_KVP">
@@ -5018,6 +5347,11 @@
             Nonsynchronous operations will not wait for a disk/filesystem flush before returning from a write or delete call. They will be much faster than their synchronous counterparts (e.g., bulk operations), however, a system crash may lose the data to some recent operations.
             
             This native ensures all `_NO_SYNC` operations are synchronized with the disk/filesystem.
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.FORMAT_STACK_TRACE">
+            <summary>
+            An internal function for converting a stack trace object to a string.
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.FREEZE_ENTITY_POSITION">
@@ -5095,6 +5429,38 @@
             Returns the name of the currently executing resource.
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_ENTITIES_IN_RADIUS">
+            <summary>
+            ### Supported types
+            
+            *   \[1] : Peds (including animals) and players.
+            *   \[2] : Vehicles.
+            *   \[3] : Objects (props), doors, and projectiles.
+            
+            ### Coordinates need to be send unpacked (x,y,z)
+            
+            ```lua
+            
+            -- Define the allowed model hashes
+            local allowedModelHashes = { GetHashKey("p_crate03x"), GetHashKey("p_crate22x") }
+            
+            -- Get the player's current coordinates
+            local playerCoords = GetEntityCoords(PlayerPedId())
+            
+            -- Retrieve all entities of type Object (type 3) within a radius of 10.0 units
+            -- that match the allowed model hashes
+            -- and sort output entities by distance
+            local entities = GetEntitiesInRadius(playerCoords.x, playerCoords.y, playerCoords.z, 10.0, 3, true, allowedModelHashes)
+            
+            -- Iterate through the list of entities and print their ids
+            for i = 1, #entities do
+                local entity = entities[i]
+                print(entity)
+            end
+            
+            ```
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_ENTITY_ATTACHED_TO">
             <summary>
             Gets the entity that this entity is attached to.
@@ -5114,7 +5480,7 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_ENTITY_FROM_STATE_BAG_NAME">
             <summary>
-            Returns the entity handle for the specified state bag name. For use with [ADD_STATE_BAG_CHANGE_HANDLER](?\_0x5BA35AAF).
+            Returns the entity handle for the specified state bag name. For use with [ADD_STATE_BAG_CHANGE_HANDLER](#\_0x5BA35AAF).
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_ENTITY_HEADING">
@@ -5241,6 +5607,7 @@
                 *   3258
                 *   3323
                 *   3407
+                *   3570
             *   RedM
                 *   1311
                 *   1355
@@ -5409,6 +5776,71 @@
             GET_LAST_PED_IN_VEHICLE_SEAT
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_NET_TYPE_FROM_ENTITY">
+            <summary>
+            Gets the specific entity type (as an integer), which can be one of the following defined down below:
+            
+            #### FiveM:
+            
+            ```cpp
+            enum eNetObjEntityType
+            {
+                Automobile = 0,
+                Bike = 1,
+                Boat = 2,
+                Door = 3,
+                Heli = 4,
+                Object = 5,
+                Ped = 6,
+                Pickup = 7,
+                PickupPlacement = 8,
+                Plane = 9,
+                Submarine = 10,
+                Player = 11,
+                Trailer = 12,
+                Train = 13
+            };
+            ```
+            
+            #### RedM:
+            
+            ```cpp
+            enum eNetObjEntityType
+            {
+                Animal = 0,
+                Automobile = 1,
+                Bike = 2,
+                Boat = 3,
+                Door = 4,
+                Heli = 5,
+                Object = 6,
+                Ped = 7,
+                Pickup = 8,
+                PickupPlacement = 9,
+                Plane = 10,
+                Submarine = 11,
+                Player = 12,
+                Trailer = 13,
+                Train = 14,
+                DraftVeh = 15,
+                StatsTracker = 16,
+                PropSet = 17,
+                AnimScene = 18,
+                GroupScenario = 19,
+                Herd = 20,
+                Horse = 21,
+                WorldState = 22,
+                WorldProjectile = 23,
+                Incident = 24,
+                Guardzone = 25,
+                PedGroup = 26,
+                CombatDirector = 27,
+                PedSharedTargeting = 28,
+                Persistent = 29
+            };
+            ```
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_NUM_PLAYER_IDENTIFIERS">
             <summary>
             GET_NUM_PLAYER_IDENTIFIERS
@@ -5427,7 +5859,7 @@
         <member name="F:CitizenFX.Server.Native.Hash.GET_NUM_RESOURCE_METADATA">
             <summary>
             Gets the amount of metadata values with the specified key existing in the specified resource's manifest.
-            See also: [Resource manifest](https://docs.fivem.net/resources/manifest/)
+            See also: [Resource manifest](https://docs.fivem.net/docs/scripting-reference/resource-manifest/resource-manifest/)
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_NUM_RESOURCES">
@@ -5538,9 +5970,9 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_PLAYER_IDENTIFIER">
             <summary>
-            To get the number of identifiers, use [GET_NUM_PLAYER_IDENTIFIERS](?\_0xFF7F66AB)
+            To get the number of identifiers, use [GET_NUM_PLAYER_IDENTIFIERS](#\_0xFF7F66AB)
             
-            To get a specific type of identifier, use [GET_PLAYER_IDENTIFIER_BY_TYPE](?\_0xA61C8FC6)
+            To get a specific type of identifier, use [GET_PLAYER_IDENTIFIER_BY_TYPE](#\_0xA61C8FC6)
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_PLAYER_IDENTIFIER_BY_TYPE">
@@ -5584,9 +6016,42 @@
             Used to get the player's Ped Entity ID when a valid `playerSrc` is passed.
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_PLAYER_PEER_STATISTICS">
+            <summary>
+            ```cpp
+            const int ENET_PACKET_LOSS_SCALE = 65536;
+            
+            enum PeerStatistics
+            {
+            	// PacketLoss will only update once every 10 seconds, use PacketLossEpoch if you want the time
+            	// since the last time the packet loss was updated.
+            
+            	// the amount of packet loss the player has, needs to be scaled with PACKET_LOSS_SCALE
+            	PacketLoss = 0,
+            	// The variance in the packet loss
+            	PacketLossVariance = 1,
+            	// The time since the last packet update in ms, relative to the peers connection time
+            	PacketLossEpoch = 2,
+            	// The mean amount of time it takes for a packet to get to the client (ping)
+            	RoundTripTime = 3,
+            	// The variance in the round trip time
+            	RoundTripTimeVariance = 4,
+            	// Despite their name, these are only updated once every 5 seconds, you can get the last time this was updated with PacketThrottleEpoch
+            	// The last recorded round trip time of a packet
+            	LastRoundTripTime = 5,
+            	// The last round trip time variance
+            	LastRoundTripTimeVariance = 6,
+            	// The time since the last packet throttle update, relative to the peers connection time
+            	PacketThrottleEpoch = 7,
+            };
+            ```
+            
+            These statistics only update once every 10 seconds.
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_PLAYER_PING">
             <summary>
-            GET_PLAYER_PING
+            See [GET_PLAYER_PEER_STATISTICS](#\_0x9A928294) if you want more detailed information, like packet loss, and packet/rtt variance
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_PLAYER_ROUTING_BUCKET">
@@ -5708,7 +6173,7 @@
         <member name="F:CitizenFX.Server.Native.Hash.GET_RESOURCE_METADATA">
             <summary>
             Gets the metadata value at a specified key/index from a resource's manifest.
-            See also: [Resource manifest](https://docs.fivem.net/resources/manifest/)
+            See also: [Resource manifest](https://docs.fivem.net/docs/scripting-reference/resource-manifest/resource-manifest/)
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_RESOURCE_PATH">
@@ -5748,6 +6213,11 @@
             GET_THRUSTER_THROTTLE
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_BACKWARD_CARRIAGE">
+            <summary>
+            GET_TRAIN_BACKWARD_CARRIAGE
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_CARRIAGE_ENGINE">
             <summary>
             GET_TRAIN_CARRIAGE_ENGINE
@@ -5756,6 +6226,31 @@
         <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_CARRIAGE_INDEX">
             <summary>
             GET_TRAIN_CARRIAGE_INDEX
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_CRUISE_SPEED">
+            <summary>
+            Gets the trains desired speed.
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_DIRECTION">
+            <summary>
+            Gets the direction the train is facing
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_FORWARD_CARRIAGE">
+            <summary>
+            GET_TRAIN_FORWARD_CARRIAGE
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_STATE">
+            <summary>
+            GET_TRAIN_STATE
+            </summary>
+        </member>
+        <member name="F:CitizenFX.Server.Native.Hash.GET_TRAIN_TRACK_INDEX">
+            <summary>
+            GET_TRAIN_TRACK_INDEX
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_VEHICLE_BODY_HEALTH">
@@ -5849,7 +6344,7 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.GET_VEHICLE_HORN_TYPE">
             <summary>
-            This is a getter for the client-side native [`START_VEHICLE_HORN`](https://docs.fivem.net/natives/?\_0x9C8C6504B5B63D2C), which allows you to return the horn type of the vehicle.
+            This is a getter for the client-side native [`START_VEHICLE_HORN`](#\_0x9C8C6504B5B63D2C), which allows you to return the horn type of the vehicle.
             
             **Note**: This native only gets the hash value set with `START_VEHICLE_HORN`. If a wrong hash is passed into `START_VEHICLE_HORN`, it will return this wrong hash.
             
@@ -6109,6 +6604,11 @@
             IS_PRINCIPAL_ACE_ALLOWED
             </summary>
         </member>
+        <member name="F:CitizenFX.Server.Native.Hash.IS_TRAIN_CABOOSE">
+            <summary>
+            IS_TRAIN_CABOOSE
+            </summary>
+        </member>
         <member name="F:CitizenFX.Server.Native.Hash.IS_VEHICLE_ENGINE_STARTING">
             <summary>
             IS_VEHICLE_ENGINE_STARTING
@@ -6131,7 +6631,7 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.IS_VEHICLE_WINDOW_INTACT">
             <summary>
-            See the client-side [IS_VEHICLE_WINDOW_INTACT](https://docs.fivem.net/natives/?\_0x46E571A0E20D01F1) for a window indexes list.
+            See the client-side [IS_VEHICLE_WINDOW_INTACT](#\_0x46E571A0E20D01F1) for a window indexes list.
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.LOAD_PLAYER_COMMERCE_DATA">
@@ -6407,9 +6907,11 @@
             }
             ```
             
-            Sets what happens when the entity is orphaned and no longer has its original owner.
+            Sets what the server will do when the entity no longer has its original owner. By default the server will cleanup entities that it considers "no longer relevant".
             
-            **NOTE**: This native doesn't guarantee the persistence of the entity.
+            When used on trains, this native will recursively call onto all attached carriages.
+            
+            **NOTE**: When used with `KeepEntity` (2) this native only guarantees that the ***server*** will not delete the entity, client requests to delete the entity will still work perfectly fine.
             </summary>
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.SET_ENTITY_REMOTE_SYNCED_SCENES_ALLOWED">
@@ -7118,7 +7620,7 @@
             
             This native function is often called prior to calling natives such as:
             
-            *   [`SetPedHairColor`](#\_0xBB43F090)
+            *   [`SetPedHairColor`](#\_0xA23FE32C)
             *   [`SetPedHeadOverlayColor`](#\_0x78935A27)
             *   [`SetPedHeadOverlay`](#\_0xD28DBA90)
             *   [`SetPedFaceFeature`](#\_0x6C8D4458)
@@ -7230,6 +7732,19 @@
         </member>
         <member name="F:CitizenFX.Server.Native.Hash.SET_PED_TO_RAGDOLL_WITH_FALL">
             <summary>
+            cpp
+            enum eNMFallType {
+                TYPE_FROM_HIGH = 0,
+                TYPE_OVER_WALL = 1,
+                TYPE_DOWN_STAIRS = 2,
+                TYPE_DIE_TYPES = 3,
+                TYPE_DIE_FROM_HIGH = 4,
+                TYPE_DIE_OVER_WALL = 5,
+                TYPE_DIE_DOWN_STAIRS = 6
+            }
+            ```
+            
+            ```
             Return variable is never used in R*'s scripts.  
             Not sure what p2 does. It seems like it would be a time judging by it's usage in R*'s scripts, but didn't seem to affect anything in my testings.  
             x, y, and z are coordinates, most likely to where the ped will fall.  
